@@ -1,7 +1,7 @@
 {
-  "name": "weatherai-web",
+  "name": "weatheria-web",
   "private": true,
-  "version": "1.0.0",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "dev": "next dev",
@@ -9,10 +9,13 @@
     "start": "next start"
   },
   "dependencies": {
-    "next": "14.2.5",
+    "next": "14.2.7",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "stripe": "16.12.0"
+    "stripe": "16.12.0",
+    "leaflet": "1.9.4",
+    "react-leaflet": "4.2.1",
+    "web-push": "3.6.7"
   },
   "devDependencies": {
     "typescript": "5.5.4",
