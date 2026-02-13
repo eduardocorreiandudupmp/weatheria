@@ -2,9 +2,8 @@ import { NextResponse } from "next/server";
 
 export async function GET(req: Request) {
   try {
-
     const url = new URL(req.url);
-    const city = url.searchParams.get("city") || "São Paulo";
+    const city = (url.searchParams.get("city") || "São Paulo").trim();
 
     const key = process.env.OPENWEATHER_API_KEY;
 
@@ -15,7 +14,7 @@ export async function GET(req: Request) {
       );
     }
 
-    // obter coordenadas
+    // geocoding
     const geoRes = await fetch(
       `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(city)}&limit=1&appid=${key}`
     );
@@ -31,23 +30,31 @@ export async function GET(req: Request) {
 
     const { lat, lon, name } = geo[0];
 
-    // obter clima atual completo
+    // weather
     const weatherRes = await fetch(
-      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&lang=pt_br&appid=${key}`
+      `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${key}`
     );
 
     const data = await weatherRes.json();
 
     return NextResponse.json({
-  city: name,
-  current: {
-    tempC: Number(data.main?.temp ?? 0),
-    feelsLikeC: Number(data.main?.feels_like ?? 0),
-    humidity: Number(data.main?.humidity ?? 0),
-    pressure: Number(data.main?.pressure ?? 0),
-    windMs: Number(data.wind?.speed ?? 0),
-    description: String(data.weather?.[0]?.description ?? ""),
-    conditionId: Number(data.weather?.[0]?.id ?? 800),
-    icon: String(data.weather?.[0]?.icon ?? ""),
-  },
-});
+      city: name,
+      current: {
+        tempC: data.main.temp,
+        feelsLikeC: data.main.feels_like,
+        humidity: data.main.humidity,
+        pressure: data.main.pressure,
+        windMs: data.wind.speed,
+        description: data.weather[0].description,
+        conditionId: data.weather[0].id,
+        icon: data.weather[0].icon
+      }
+    });
+
+  } catch (e: any) {
+    return NextResponse.json(
+      { error: "Falha ao obter clima", detail: e.message },
+      { status: 500 }
+    );
+  }
+}
