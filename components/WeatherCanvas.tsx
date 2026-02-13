@@ -43,12 +43,14 @@ export default function WeatherCanvas({ conditionId }: { conditionId?: number })
       v: 0.8 + Math.random() * 1.7,
     }));
 
-    function resize() {
-      const rect = canvas.getBoundingClientRect();
-      canvas.width = Math.floor(rect.width * dpr);
-      canvas.height = Math.floor(rect.height * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
+function resize() {
+  const c = ref.current;
+  if (!c) return;
+  const rect = c.getBoundingClientRect();
+  c.width = Math.floor(rect.width * dpr);
+  c.height = Math.floor(rect.height * dpr);
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
 
     resize();
     const ro = new ResizeObserver(resize);
