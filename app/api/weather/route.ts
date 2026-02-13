@@ -39,36 +39,15 @@ export async function GET(req: Request) {
     const data = await weatherRes.json();
 
     return NextResponse.json({
-      city: name,
-
-      current: {
-
-        tempC: data.main.temp,
-
-        feelsLikeC: data.main.feels_like,
-
-        humidity: data.main.humidity,
-
-        pressure: data.main.pressure,
-
-        windMs: data.wind.speed,
-
-        description: data.weather[0].description,
-
-        conditionId: data.weather[0].id,
-
-        icon: data.weather[0].icon
-
-      }
-
-    });
-
-  } catch (err) {
-
-    return NextResponse.json(
-      { error: "Erro interno" },
-      { status: 500 }
-    );
-
-  }
-}
+  city: name,
+  current: {
+    tempC: Number(data.main?.temp ?? 0),
+    feelsLikeC: Number(data.main?.feels_like ?? 0),
+    humidity: Number(data.main?.humidity ?? 0),
+    pressure: Number(data.main?.pressure ?? 0),
+    windMs: Number(data.wind?.speed ?? 0),
+    description: String(data.weather?.[0]?.description ?? ""),
+    conditionId: Number(data.weather?.[0]?.id ?? 800),
+    icon: String(data.weather?.[0]?.icon ?? ""),
+  },
+});
