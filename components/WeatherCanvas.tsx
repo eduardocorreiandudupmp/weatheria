@@ -1,2 +1,150 @@
 "use client";
-export default function WeatherCanvas(){return null}
+import { useEffect, useRef } from "react";
+
+type Mode = "clear" | "clouds" | "rain" | "storm" | "snow" | "fog";
+
+function modeFromCondition(id?: number): Mode {
+  if (!id) return "clouds";
+  if (id >= 200 && id < 300) return "storm";
+  if (id >= 300 && id < 600) return "rain";
+  if (id >= 600 && id < 700) return "snow";
+  if (id >= 700 && id < 800) return "fog";
+  if (id === 800) return "clear";
+  return "clouds";
+}
+
+export default function WeatherCanvas({ conditionId }: { conditionId?: number }) {
+  const ref = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    const canvas = ref.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    let raf = 0;
+    let t = 0;
+    const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    const mode = modeFromCondition(conditionId);
+
+    const clouds = Array.from({ length: 12 }).map(() => ({
+      x: Math.random(),
+      y: 0.15 + Math.random() * 0.45,
+      s: 0.22 + Math.random() * 0.55,
+      v: 0.02 + Math.random() * 0.03,
+      o: 0.10 + Math.random() * 0.18,
+    }));
+
+    const drops = Array.from({ length: 240 }).map(() => ({
+      x: Math.random(),
+      y: Math.random(),
+      l: 0.03 + Math.random() * 0.07,
+      v: 0.8 + Math.random() * 1.6,
+    }));
+
+    const flakes = Array.from({ length: 140 }).map(() => ({
+      x: Math.random(),
+      y: Math.random(),
+      r: 0.7 + Math.random() * 1.8,
+      v: 0.15 + Math.random() * 0.45,
+      w: 0.2 + Math.random() * 0.6,
+    }));
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = Math.floor(rect.width * dpr);
+      canvas.height = Math.floor(rect.height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+
+    function drawCloud(cx: number, cy: number, s: number, alpha: number) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = "rgba(255,255,255,0.75)";
+      const w = s * 220, h = s * 70;
+      ctx.beginPath();
+      ctx.ellipse(cx, cy, w * 0.35, h * 0.45, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx - w * 0.20, cy + h * 0.05, w * 0.28, h * 0.40, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx + w * 0.18, cy + h * 0.08, w * 0.30, h * 0.42, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function lightning(w: number, h: number, intensity: number) {
+      ctx.save();
+      ctx.globalAlpha = intensity;
+      ctx.fillStyle = "rgba(255,255,255,0.9)";
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+    }
+
+    function frame() {
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      t += 0.016;
+
+      ctx.clearRect(0, 0, w, h);
+
+      // clouds
+      if (mode !== "clear") {
+        for (const c of clouds) {
+          c.x = (c.x + c.v * 0.004) % 1.2;
+          drawCloud(w * (c.x - 0.1), h * c.y, c.s, c.o);
+        }
+      }
+
+      // rain / storm
+      if (mode === "rain" || mode === "storm") {
+        ctx.save();
+        ctx.strokeStyle = "rgba(190,220,255,0.60)";
+        ctx.lineWidth = 1;
+        for (const d of drops) {
+          d.y += d.v * 0.016;
+          d.x += 0.12 * 0.016;
+          if (d.y > 1.1) { d.y = -0.1; d.x = Math.random(); }
+          if (d.x > 1.1) d.x = -0.1;
+          const x = w * d.x;
+          const y = h * d.y;
+          ctx.beginPath();
+          ctx.moveTo(x, y);
+          ctx.lineTo(x + 10, y + d.l * h);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      // snow
+      if (mode === "snow") {
+        ctx.save();
+        ctx.fillStyle = "rgba(255,255,255,0.75)";
+        for (const f of flakes) {
+          f.y += f.v * 0.016;
+          f.x += Math.sin(t * f.w) * 0.0012;
+          if (f.y > 1.1) { f.y = -0.1; f.x = Math.random(); }
+          const x = w * f.x;
+          const y = h * f.y;
+          ctx.beginPath();
+          ctx.arc(x, y, f.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
+      // storm flash
+      if (mode === "storm") {
+        const p = (Math.sin(t * 2.3) + 1) * 0.5;
+        if (p > 0.995) lightning(w, h, 0.6);
+      }
+
+      raf = requestAnimationFrame(frame);
+    }
+
+    raf = requestAnimationFrame(frame);
+    return () => { cancelAnimationFrame(raf); ro.disconnect(); };
+  }, [conditionId]);
+
+  return <canvas ref={ref} className="heroCanvas" />;
+}
