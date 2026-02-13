@@ -66,7 +66,7 @@ export default function RadarMapLoop() {
       </div>
 
       <div style={{ height: 520, borderRadius: 18, overflow: "hidden", border: "1px solid rgba(255,255,255,.12)" }}>
-        <MapContainer center={center} zoom={7} style={{ height: "100%", width: "100%" }}>
+        <MapContainer center={center} zoom={4} style={{ height: "100%", width: "100%" }}>
           <LayersControl position="topright">
             <LayersControl.BaseLayer checked name="Mapa (OSM)">
               <TileLayer
