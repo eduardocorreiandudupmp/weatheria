@@ -46,7 +46,7 @@ export default function RadarMapLoop() {
     return new Intl.DateTimeFormat("pt-BR", { hour: "2-digit", minute: "2-digit" }).format(dt);
   }, [frames, idx]);
 
-  const center: [number, number] = [-23.5505, -46.6333];
+  const center: [number, number] = [-14.235, -51.9253]; // centro do Brasil
 
   return (
     <div>
