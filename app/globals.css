@@ -52,7 +52,8 @@ body{
   border:1px solid rgba(255,255,255,.2);
   background:rgba(255,255,255,.05);
   color:white;
-  width:200px;
+  width:320px;
+  max-width: 60vw;
 }
 
 .card{
@@ -66,7 +67,7 @@ body{
 .cardHero{
   position:relative;
   overflow:hidden;
-  min-height:220px;
+  min-height:320px;
 }
 
 .cardInner{
